@@ -1,5 +1,6 @@
 #include "untitled.h"
 #include "UntitledPlayer.h"
+#include "UntitledNPC.h"
 
 
 // Sets default values
@@ -51,7 +52,6 @@ void AUntitledPlayer::SetupPlayerInputComponent(class UInputComponent* InputComp
 	InputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	InputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 	InputComponent->BindAction("Interact", IE_Pressed, this, &AUntitledPlayer::Interact);
-	InputComponent->BindAction("Interact", IE_Released, this, &AUntitledPlayer::Interact);
 
 	InputComponent->BindAxis("MoveForward", this, &AUntitledPlayer::MoveForward);
 	InputComponent->BindAxis("MoveRight", this, &AUntitledPlayer::MoveRight);
@@ -134,6 +134,10 @@ void AUntitledPlayer::Interact()
 	AActor *actor = CheckForInteractions();
 	if (actor != NULL)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, (TEXT("Interacting with ") + actor->GetName()));
+		if (actor->IsA(AUntitledNPC::StaticClass()))
+		{
+			AUntitledNPC *npc = Cast<AUntitledNPC>(actor);
+			npc->Interact();
+		}
 	}
 }
