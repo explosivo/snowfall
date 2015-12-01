@@ -42,7 +42,6 @@ void AUntitledPlayer::BeginPlay()
 void AUntitledPlayer::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
-
 }
 
 // Called to bind functionality to input
@@ -51,6 +50,8 @@ void AUntitledPlayer::SetupPlayerInputComponent(class UInputComponent* InputComp
 	check(InputComponent);
 	InputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	InputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	InputComponent->BindAction("Interact", IE_Pressed, this, &AUntitledPlayer::Interact);
+	InputComponent->BindAction("Interact", IE_Released, this, &AUntitledPlayer::Interact);
 
 	InputComponent->BindAxis("MoveForward", this, &AUntitledPlayer::MoveForward);
 	InputComponent->BindAxis("MoveRight", this, &AUntitledPlayer::MoveRight);
@@ -101,3 +102,38 @@ void AUntitledPlayer::ZoomCamera(float Value)
 	CameraBoom->TargetArmLength += Value;
 }
 
+AActor* AUntitledPlayer::CheckForInteractions()
+{
+	AActor *HitActor = NULL;
+	FVector Start = GetActorLocation();
+	FVector End = Start + FRotationMatrix(GetActorRotation()).GetScaledAxis(EAxis::X) * 300;
+	FHitResult HitData(ForceInit);
+	bool FoundObject = false;
+
+	if (!GetWorld())
+	{
+		return NULL;
+	}
+
+	//DrawDebugLine(GetWorld(), Start, End, FColor::Red);
+
+	FCollisionQueryParams TraceParams(FName(TEXT("Interactions Trace")), true, NULL);
+	TraceParams.bTraceComplex = false;
+	TraceParams.bReturnPhysicalMaterial = false;
+	TraceParams.AddIgnoredActor(this);
+	FCollisionObjectQueryParams ObjectParams;
+	ObjectParams.AddObjectTypesToQuery(ECollisionChannel::ECC_Pawn);
+	GetWorld()->LineTraceSingleByObjectType(HitData, Start, End, ObjectParams, TraceParams);
+	HitActor = HitData.GetActor();
+
+	return HitActor;
+}
+
+void AUntitledPlayer::Interact()
+{
+	AActor *actor = CheckForInteractions();
+	if (actor != NULL)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, (TEXT("Interacting with ") + actor->GetName()));
+	}
+}

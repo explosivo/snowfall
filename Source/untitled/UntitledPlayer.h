@@ -42,6 +42,8 @@ protected:
 	void TurnAtRate(float Rate);
 	void LookUpAtRate(float Rate);
 	void ZoomCamera(float Value);
+	AActor* CheckForInteractions();
+	void Interact();
 
 	
 	
